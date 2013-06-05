@@ -1,6 +1,10 @@
 my little forum - http://mylittleforum.net/
 
 BoF Edition!
+Note, the config/db_settings.php.stock must be renamed to config/db_settings.php
+in order to successfully test this installation.  The live db_settings.php
+contains a cleartext password (boo php mysql!) and therefore cannot be published
+on github.
 
 REQUIREMENTS:
 * Webserver with PHP >= 5.2 and MySQL >= 4.1
