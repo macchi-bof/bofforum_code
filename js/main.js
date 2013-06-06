@@ -1055,7 +1055,7 @@ var ready = new (function () {
 			var like = document.createElementWithAttributes("a", {"lk":"1", "id":"lk"+id, "href":"#", "onclick": function(e) { return self.likeThread(id,1); } }, outer);
 			like.innerHTML = "&nbsp;Like&nbsp;";
 			outer.insertBefore(document.createTextNode( "  " ), like);
-			var numlikes = document.createElementWithAttributes("a", {"id":"lks"+id, "href":"#", "onclick": function(e) {return false;} }, outer);
+			var numlikes = document.createElementWithAttributes("a", {"pid":id, "id":"lks"+id, "href":"#", "onclick": function(e) {self.showAjaxLikesWindow(this); this.blur(); return false;} }, outer);
 			outer.insertBefore(document.createTextNode( "  " ), numlikes);
 			outer.appendChild( document.createTextNode( "  " ) );
 			return outer;
@@ -1445,6 +1445,29 @@ var ready = new (function () {
 				var querys = [
 								new Query("mode", "entry"),
 								new Query("ajax_preview", "true"),
+								new Query("id", obj.pid)
+				];
+				new Request(strURL, "POST", querys, this, "updateAjaxPreviewWindow", null, true);
+			}
+
+		};
+
+		this.showAjaxLikesWindow = function(obj) {
+			if (!obj || !ajaxPreviewWindow)
+				return;
+			if (obj == ajaxPreviewWindow.getOpener() && ajaxPreviewWindow.isVisible()) {
+				ajaxPreviewWindow.setVisible(false);
+				ajaxPreviewWindow.setOpener(null);
+			}
+			else {
+				var elPos = document.getElementPoSi(obj);
+				ajaxPreviewWindow.setOpener(obj);
+				ajaxPreviewWindow.setText("");
+				ajaxPreviewWindow.setVisible(true);	
+				ajaxPreviewWindow.setPosition( elPos.left, elPos.top );
+				var querys = [
+								new Query("mode", "like"),
+								new Query("like", "ajax"),
 								new Query("id", obj.pid)
 				];
 				new Request(strURL, "POST", querys, this, "updateAjaxPreviewWindow", null, true);
