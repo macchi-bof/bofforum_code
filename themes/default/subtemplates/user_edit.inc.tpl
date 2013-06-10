@@ -135,13 +135,14 @@
 </tr>
 {/if}
 
-{if $mod||$admin}
 <tr>
 <td class="c"><strong>{#edit_user_notification#}</strong></td>
 <td class="d"><input id="new_posting_notification" type="checkbox" name="new_posting_notification" value="1"{if $new_posting_notification=="1"} checked="checked"{/if} /><label for="new_posting_notification">{#admin_mod_notif_posting#}</label><br />
-<input id="new_user_notification" type="checkbox" name="new_user_notification" value="1"{if $new_user_notification=="1"} checked="checked"{/if} /><label for="new_user_notification">{#admin_mod_notif_register#}</label></td>
-</tr>
+{if $mod||$admin}
+<input id="new_user_notification" type="checkbox" name="new_user_notification" value="1"{if $new_user_notification=="1"} checked="checked"{/if} /><label for="new_user_notification">{#admin_mod_notif_register#}</label>
 {/if}
+</td>
+</tr>
 <tr>
 <td class="c">&nbsp;</td>
 <td class="d"><input type="submit" name="edit_user_submit" value="{#userdata_submit_button#}" /></td>

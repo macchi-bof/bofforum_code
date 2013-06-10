@@ -1449,7 +1449,8 @@ function emailNotification2ParentAuthor($id, $delayed=false)
       #$recipient = encode_mail_name($parent_data['name']).' <'.$parent_data['email'].'>';
       $recipient = $parent_data['email'];
       $subject = str_replace("[original_subject]",  $parent_data['subject'], $lang['email_subject']);
-      my_mail($recipient, $subject, $emailbody);
+      $subject = str_replace("[subject]",  $data['subject'], $lang['email_subject']);
+      my_threaded_mail($recipient, $subject, $emailbody, "", $id);
      }
     if($parent_data['pid']!=0)
      {
@@ -1484,7 +1485,7 @@ function emailNotification2ParentAuthor($id, $delayed=false)
         #$recipient = encode_mail_name($ts_data['name']).' <'.$ts_data['email'].'>';
         $recipient = $ts_data['email'];
         $subject = str_replace("[original_subject]",  $ts_data['subject'], $lang['email_subject']);
-        my_mail($recipient, $subject, $emailbody);
+        my_threaded_mail($recipient, $subject, $emailbody, "", $id);
        }
      }
    }
@@ -1502,7 +1503,7 @@ function emailNotification2ModsAndAdmins($id, $delayed=false)
   global $settings, $db_settings, $lang, $connid;
   $id=intval($id);
   // data of posting:
-  $result = @mysql_query("SELECT pid, name, user_name, ".$db_settings['forum_table'].".user_id, subject, text
+  $result = @mysql_query("SELECT pid, name, user_name, user_email, ".$db_settings['forum_table'].".user_id, subject, text
                          FROM ".$db_settings['forum_table']."
                          LEFT JOIN ".$db_settings['userdata_table']." ON ".$db_settings['userdata_table'].".user_id=".$db_settings['forum_table'].".user_id
                          WHERE id = ".intval($id)." LIMIT 1", $connid);
@@ -1514,24 +1515,32 @@ function emailNotification2ModsAndAdmins($id, $delayed=false)
     if(!$data['user_name']) $data['name'] = $lang['unknown_user'];
     else $data['name'] = $data['user_name'];
    }
+  $fromemail = $data['user_email'];
+  if ($fromemail == "") {
+    $fromemail = "<bofforum@barrel-of-fun.org>";
+  }
+  $fromemail = $data['user_name']." ".$fromemail;
   $name = $data['name'];
   $subject = $data['subject'];
   $text = email_format($data['text']);
-  if($data['pid'] > 0) $emailbody = str_replace("[name]", $name, $lang['admin_email_text_reply']); else $emailbody = str_replace("[name]", $name, $lang['admin_email_text']);
+  #if($data['pid'] > 0) $emailbody = str_replace("[name]", $name, $lang['admin_email_text_reply']); else $emailbody = str_replace("[name]", $name, $lang['admin_email_text']);
+  if($data['pid'] > 0) $emailbody = str_replace("[name]", $name, $lang['email_text']); else $emailbody = str_replace("[name]", $name, $lang['email_text']);
   $emailbody = str_replace("[subject]", $subject, $emailbody);
   $emailbody = str_replace("[text]", $text, $emailbody);
   $emailbody = str_replace("[posting_address]", $settings['forum_address']."index.php?id=".$id, $emailbody);
   $emailbody = str_replace("[forum_address]", $settings['forum_address'], $emailbody);
   if($delayed==true) $emailbody = $emailbody . "\n\n" . $lang['email_text_delayed_addition'];
-  $lang['admin_email_subject'] = str_replace("[subject]", $subject, $lang['admin_email_subject']);
+  #$lang['admin_email_subject'] = str_replace("[subject]", $subject, $lang['admin_email_subject']);
+  $mysubj = str_replace("[subject]", $subject, $lang['email_subject']);
   // who gets an E-mail notification?
-  $recipient_result = @mysql_query("SELECT user_name, user_email FROM ".$db_settings['userdata_table']." WHERE user_type > 0 AND new_posting_notification=1", $connid) or raise_error('database_error',mysql_error());
+  $recipient_result = @mysql_query("SELECT user_name, user_email FROM ".$db_settings['userdata_table']." WHERE user_type >= 0 AND new_posting_notification=1", $connid) or raise_error('database_error',mysql_error());
   while($admin_array = mysql_fetch_array($recipient_result))
    {
     $ind_emailbody = str_replace("[admin]", $admin_array['user_name'], $emailbody);
     #$recipient = encode_mail_name($admin_array['user_name']).' <'.$admin_array['user_email'].'>';
     $recipient = $admin_array['user_email'];
-    my_mail($recipient, $lang['admin_email_subject'], $ind_emailbody);
+    my_threaded_mail($recipient, $subject, $emailbody, $fromemail, $id);
+    #my_mail($recipient, $lang['admin_email_subject'], $ind_emailbody);
    }
   mysql_free_result($recipient_result);
  }
@@ -2347,7 +2356,7 @@ function get_mail_encoding($string)
  * @param string $headers
  * @return string
  */
-function my_mail($to, $subject, $message, $from='')
+function my_threaded_mail($to, $subject, $message, $from, $id)
  {
   global $settings;
   $mail_header_separator = "\n"; // "\r\n" complies with RFC 2822 but might cause problems in some cases (see http://php.net/manual/en/function.mail.php)
@@ -2371,6 +2380,8 @@ function my_mail($to, $subject, $message, $from='')
   $headers .= "MIME-Version: 1.0" . $mail_header_separator;
   $headers .= "X-Sender-IP: ". $_SERVER['REMOTE_ADDR'] . $mail_header_separator;
   $headers .= "Content-Type: text/plain; charset=" . $mail_charset . $mail_header_separator;
+  $headers .= "Message-Id: <BOFID-".$id."-".md5($message)."@barrel-of-fun.org>".$mail_header_separator;
+  $headers .= "Reply-To: bofforum@barrel-of-fun.org".$mail_header_separator;
   $headers .= "Content-Transfer-Encoding: quoted-printable";
 
   if($settings['mail_parameter']!='')
@@ -2396,6 +2407,10 @@ function my_mail($to, $subject, $message, $from='')
      }
    }
  }
+
+function my_mail($to, $subject, $message, $from = "") {
+  return my_threaded_mail($to, $subject, $message, $from, "");
+}
 
 /**
  * checks if the IP of the user is banned

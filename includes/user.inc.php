@@ -474,9 +474,9 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
           }
         }
 
+       $smarty->assign('new_posting_notification', $row['new_posting_notification']);
        if($_SESSION[$settings['session_prefix'].'user_type']==1||$_SESSION[$settings['session_prefix'].'user_type']==2)
         {
-         $smarty->assign('new_posting_notification', $row['new_posting_notification']);
          $smarty->assign('new_user_notification', $row['new_user_notification']);
         }
 
@@ -562,18 +562,18 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
 
        if(isset($_POST['user_view'])) $user_view = intval($_POST['user_view']); else $user_view=0;
        if($user_view!=0&&$user_view!=1&&$user_view!=2) $user_view = 0;
+       $new_posting_notification = 0;
+       if(isset($_POST['new_posting_notification']) && $_SESSION[$settings['session_prefix'].'user_type']>=0) $new_posting_notification = intval($_POST['new_posting_notification']);
+       else $new_posting_notification = 0;
+       if($new_posting_notification!=0&&$new_posting_notification!=1) $new_posting_notification=0;
        if($_SESSION[$settings['session_prefix'].'user_type']==1||$_SESSION[$settings['session_prefix'].'user_type']==2)
         {
-         if(isset($_POST['new_posting_notification']) && $_SESSION[$settings['session_prefix'].'user_type']>0) $new_posting_notification = intval($_POST['new_posting_notification']);
-         else $new_posting_notification = 0;
-         if($new_posting_notification!=0&&$new_posting_notification!=1) $new_posting_notification=0;
          if(isset($_POST['new_user_notification']) && $_SESSION[$settings['session_prefix'].'user_type']>0) $new_user_notification = intval($_POST['new_user_notification']);
          else $new_user_notification = 0;
          if($new_user_notification!=0&&$new_user_notification!=1) $new_user_notification=0;
         }
        else
         {
-         $new_posting_notification = 0;
          $new_user_notification = 0;
         }
 

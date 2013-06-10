@@ -963,18 +963,23 @@ update_items_note =               Please upload now the following files/folders 
 update_download =                 If you do not have these files yet you can download them [[here]].
 
 [emails]
-email_subject =                   Reply on "[original_subject]"
-email_text =                      """Hi [recipient],
-[name] has posted a reply on \"[original_subject]\":
-
-Subject: [subject]
+email_subject =                   [subject]
+##email_text =                      """Hi [recipient],
+##[name] has posted a reply on \"[original_subject]\":
+##
+##Subject: [subject]
+##[text]
+##
+##URL of this posting: [posting_address]
+##
+##--- Your original posting ---
+##
+##[original_text]"""
+email_text =                      """
 [text]
 
-URL of this posting: [posting_address]
-
---- Your original posting ---
-
-[original_text]"""
+-- 
+To open the thread, visit [posting_address]"""
 
 email_text_delayed_addition =     """---
 This notification is delayed because the posting was activated manually"""
