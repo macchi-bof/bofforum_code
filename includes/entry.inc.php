@@ -23,7 +23,7 @@ if(isset($id) && $id > 0)
    $result=@mysql_query("SELECT id, pid, tid, ".$db_settings['forum_table'].".user_id, UNIX_TIMESTAMP(time + INTERVAL ".$time_difference." MINUTE) AS disp_time,
                          UNIX_TIMESTAMP(time) AS time, UNIX_TIMESTAMP(edited + INTERVAL ".$time_difference." MINUTE) AS edit_time,
                          UNIX_TIMESTAMP(edited - INTERVAL ".$settings['edit_delay']." MINUTE) AS edited_diff, edited_by, name, email,
-                         subject, hp, location, ip, text, cache_text, tags, show_signature, category, locked, ip, views, spam, spam_check_status, edit_key,
+                         subject, hp, location, ip, text, cache_text, tags, show_signature, category, locked, sticky, ip, views, spam, spam_check_status, edit_key,
                          user_name, user_type, user_email, email_contact, user_hp, user_location, signature, cache_signature
                          FROM ".$db_settings['forum_table']."
                          LEFT JOIN ".$db_settings['entry_cache_table']." ON ".$db_settings['entry_cache_table'].".cache_id=id
@@ -209,6 +209,7 @@ $smarty->assign('user_type',$entrydata['user_type']);
 $smarty->assign('disp_time',$entrydata['disp_time']);
 $smarty->assign('formated_time',$entrydata['formated_time']);
 $smarty->assign('locked',$entrydata['locked']);
+$smarty->assign('sticky',$entrydata['sticky']);
 
 $ago['days'] = floor((TIMESTAMP - $entrydata['time'])/86400);
 $ago['hours'] = floor(((TIMESTAMP - $entrydata['time'])/3600)-($ago['days']*24));

@@ -191,7 +191,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
     case 'show_user':
      $id = intval($_GET['show_user']);
 
-     $result = mysql_query("SELECT user_id, user_type, user_name, user_real_name, gender, birthday, user_email, email_contact, user_hp, user_location, profile, cache_profile, logins, UNIX_TIMESTAMP(registered) AS registered, UNIX_TIMESTAMP(registered + INTERVAL ".$time_difference." MINUTE) AS user_registered, UNIX_TIMESTAMP(last_login + INTERVAL ".$time_difference." MINUTE) AS user_last_login, user_lock
+     $result = mysql_query("SELECT user_id, user_type, user_name, user_real_name, gender, birthday, user_email, email_contact, user_hp, user_emailalias, user_location, profile, cache_profile, logins, UNIX_TIMESTAMP(registered) AS registered, UNIX_TIMESTAMP(registered + INTERVAL ".$time_difference." MINUTE) AS user_registered, UNIX_TIMESTAMP(last_login + INTERVAL ".$time_difference." MINUTE) AS user_last_login, user_lock
      FROM ".$db_settings['userdata_table']."
      LEFT JOIN ".$db_settings['userdata_cache_table']." ON ".$db_settings['userdata_cache_table'].".cache_id=".$db_settings['userdata_table'].".user_id
      WHERE user_id = ".$id." LIMIT 1", $connid) or raise_error('database_error',mysql_error());
@@ -380,7 +380,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
      if(isset($_SESSION[$settings['session_prefix'].'user_id']))
       {
        $id = $_SESSION[$settings['session_prefix'].'user_id'];
-       $result = mysql_query("SELECT user_id, user_name, user_real_name, gender, birthday, user_email, email_contact, user_hp, user_location, signature, profile, new_posting_notification, new_user_notification, auto_login_code, language, time_zone, time_difference, theme FROM ".$db_settings['userdata_table']." WHERE user_id = ".$id." LIMIT 1", $connid) or raise_error('database_error',mysql_error());
+       $result = mysql_query("SELECT user_id, user_name, user_real_name, gender, birthday, user_email, user_emailalias, email_contact, user_hp, user_location, signature, profile, new_posting_notification, like_notification, new_user_notification, auto_login_code, language, time_zone, time_difference, theme FROM ".$db_settings['userdata_table']." WHERE user_id = ".$id." LIMIT 1", $connid) or raise_error('database_error',mysql_error());
        $row = mysql_fetch_array($result);
        mysql_free_result($result);
        if(trim($row['birthday']) == '' || $row['birthday']=='0000-00-00') $user_birthday = '';
@@ -450,6 +450,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
        $smarty->assign('user_gender', $row['gender']);
        $smarty->assign('user_birthday', $user_birthday);
        $smarty->assign('user_email',htmlspecialchars($row['user_email']));
+       $smarty->assign('user_emailalias',htmlspecialchars($row['user_emailalias']));
        $smarty->assign('email_contact',$row['email_contact']);
        $smarty->assign('user_hp', htmlspecialchars($row['user_hp']));
        $smarty->assign('user_location', htmlspecialchars($row['user_location']));
@@ -475,6 +476,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
         }
 
        $smarty->assign('new_posting_notification', $row['new_posting_notification']);
+       $smarty->assign('like_notification', $row['like_notification']);
        if($_SESSION[$settings['session_prefix'].'user_type']==1||$_SESSION[$settings['session_prefix'].'user_type']==2)
         {
          $smarty->assign('new_user_notification', $row['new_user_notification']);
@@ -501,6 +503,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
        else $gender=0;
        if($gender!=0&&$gender!=1&&$gender!=2) $gender=0;
        $user_location = trim($_POST['user_location']);
+       $user_emailalias = trim($_POST['user_emailalias']);
        $profile = trim($_POST['profile']);
        $signature = trim($_POST['signature']);
 
@@ -563,9 +566,13 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
        if(isset($_POST['user_view'])) $user_view = intval($_POST['user_view']); else $user_view=0;
        if($user_view!=0&&$user_view!=1&&$user_view!=2) $user_view = 0;
        $new_posting_notification = 0;
+       $like_notification = 0;
        if(isset($_POST['new_posting_notification']) && $_SESSION[$settings['session_prefix'].'user_type']>=0) $new_posting_notification = intval($_POST['new_posting_notification']);
        else $new_posting_notification = 0;
+       if(isset($_POST['like_notification']) && $_SESSION[$settings['session_prefix'].'user_type']>=0) $like_notification = intval($_POST['like_notification']);
+       else $like_notification = 0;
        if($new_posting_notification!=0&&$new_posting_notification!=1) $new_posting_notification=0;
+       if($like_notification!=0&&$like_notification!=1) $like_notification=0;
        if($_SESSION[$settings['session_prefix'].'user_type']==1||$_SESSION[$settings['session_prefix'].'user_type']==2)
         {
          if(isset($_POST['new_user_notification']) && $_SESSION[$settings['session_prefix'].'user_type']>0) $new_user_notification = intval($_POST['new_user_notification']);
@@ -665,7 +672,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
        if(isset($errors))
         {
          $smarty->assign('errors', $errors);
-         $result = mysql_query("SELECT user_name, user_email FROM ".$db_settings['userdata_table']." WHERE user_id = ".intval($id)." LIMIT 1", $connid) or raise_error('database_error',mysql_error());
+         $result = mysql_query("SELECT user_name, user_email, user_emailalias FROM ".$db_settings['userdata_table']." WHERE user_id = ".intval($id)." LIMIT 1", $connid) or raise_error('database_error',mysql_error());
          $row = mysql_fetch_array($result);
          mysql_free_result($result);
          // timezones:
@@ -691,6 +698,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
          if(isset($too_long_word)) $smarty->assign('word',$too_long_word);
          $smarty->assign('user_name', htmlspecialchars($row['user_name']));
          $smarty->assign('user_email', htmlspecialchars($row['user_email']));
+         $smarty->assign('user_emailalias', htmlspecialchars($row['user_emailalias']));
          $smarty->assign('email_contact', $email_contact);
          $smarty->assign('user_hp', htmlspecialchars($user_hp));
          $smarty->assign('user_real_name', htmlspecialchars($user_real_name));
@@ -703,6 +711,7 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
          #$smarty->assign('user_view', $user_view);
          $smarty->assign('auto_login', $auto_login);
          $smarty->assign('new_posting_notification', $new_posting_notification);
+         $smarty->assign('like_notification', $like_notification);
          $smarty->assign('new_user_notification', $new_user_notification);
          if(isset($_POST['category_selection']) && is_array($_POST['category_selection'])) $smarty->assign('category_selection', $_POST['category_selection']);
          $smarty->assign('time_difference_array',$user_time_difference_array);
@@ -717,12 +726,12 @@ if(isset($_SESSION[$settings['session_prefix'].'user_id']) || $settings['user_ar
         {
          if(isset($category_selection_db))
           {
-           @mysql_query("UPDATE ".$db_settings['userdata_table']." SET email_contact=".intval($email_contact).", user_hp='".mysql_real_escape_string($user_hp)."', user_real_name='".mysql_real_escape_string($user_real_name)."', gender=".intval($gender).", birthday='".mysql_real_escape_string($birthday)."', user_location='".mysql_real_escape_string($user_location)."', profile='".mysql_real_escape_string($profile)."', signature='".mysql_real_escape_string($signature)."', user_view=".intval($user_view).", new_posting_notification=".intval($new_posting_notification).", new_user_notification=".intval($new_user_notification).", category_selection='".mysql_real_escape_string($category_selection_db)."', language='".mysql_real_escape_string($user_language)."', time_zone='".mysql_real_escape_string($user_time_zone)."', time_difference=".intval($user_time_difference).", theme='".mysql_real_escape_string($user_theme)."', last_login=last_login,last_logout=last_logout,registered=registered WHERE user_id=".intval($id), $connid);
+           @mysql_query("UPDATE ".$db_settings['userdata_table']." SET email_contact=".intval($email_contact).", user_hp='".mysql_real_escape_string($user_hp)."', user_real_name='".mysql_real_escape_string($user_real_name)."', gender=".intval($gender).", birthday='".mysql_real_escape_string($birthday)."', user_emailalias='".mysql_real_escape_string($user_emailalias)."', user_location='".mysql_real_escape_string($user_location)."', profile='".mysql_real_escape_string($profile)."', signature='".mysql_real_escape_string($signature)."', user_view=".intval($user_view).", new_posting_notification=".intval($new_posting_notification).", like_notification=".intval($like_notification).", new_user_notification=".intval($new_user_notification).", category_selection='".mysql_real_escape_string($category_selection_db)."', language='".mysql_real_escape_string($user_language)."', time_zone='".mysql_real_escape_string($user_time_zone)."', time_difference=".intval($user_time_difference).", theme='".mysql_real_escape_string($user_theme)."', last_login=last_login,last_logout=last_logout,registered=registered WHERE user_id=".intval($id), $connid);
            $_SESSION[$settings['session_prefix'].'usersettings']['category_selection'] = $filtered_category_selection;
           }
          else
           {
-           @mysql_query("UPDATE ".$db_settings['userdata_table']." SET email_contact=".intval($email_contact).", user_hp='".mysql_real_escape_string($user_hp)."', user_real_name='".mysql_real_escape_string($user_real_name)."', gender=".intval($gender).", birthday='".mysql_real_escape_string($birthday)."', user_location='".mysql_real_escape_string($user_location)."', profile='".mysql_real_escape_string($profile)."', signature='".mysql_real_escape_string($signature)."', user_view=".intval($user_view).", new_posting_notification=".intval($new_posting_notification).", new_user_notification=".intval($new_user_notification).", category_selection=NULL, language='".mysql_real_escape_string($user_language)."', time_zone='".mysql_real_escape_string($user_time_zone)."', time_difference=".intval($user_time_difference).", theme='".mysql_real_escape_string($user_theme)."', last_login=last_login,last_logout=last_logout,registered=registered WHERE user_id=".intval($id), $connid);
+           @mysql_query("UPDATE ".$db_settings['userdata_table']." SET email_contact=".intval($email_contact).", user_hp='".mysql_real_escape_string($user_hp)."', user_real_name='".mysql_real_escape_string($user_real_name)."', gender=".intval($gender).", birthday='".mysql_real_escape_string($birthday)."', user_emailalias='".mysql_real_escape_string($user_emailalias)."', user_location='".mysql_real_escape_string($user_location)."', profile='".mysql_real_escape_string($profile)."', signature='".mysql_real_escape_string($signature)."', user_view=".intval($user_view).", new_posting_notification=".intval($new_posting_notification).", like_notification=".intval($like_notification).", new_user_notification=".intval($new_user_notification).", category_selection=NULL, language='".mysql_real_escape_string($user_language)."', time_zone='".mysql_real_escape_string($user_time_zone)."', time_difference=".intval($user_time_difference).", theme='".mysql_real_escape_string($user_theme)."', last_login=last_login,last_logout=last_logout,registered=registered WHERE user_id=".intval($id), $connid);
            unset($_SESSION[$settings['session_prefix'].'usersettings']['category_selection']);
           }
          // auto login:

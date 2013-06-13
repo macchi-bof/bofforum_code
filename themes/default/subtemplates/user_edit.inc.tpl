@@ -32,8 +32,12 @@
 </tr>
 <tr>
 <td class="c"><strong>{#edit_user_email#}</strong></td>
-<td class="d"><!--<a href="mailto:{$user_email}">-->{$user_email}<!--</a>--> &nbsp;<span class="small">[ <a href="index.php?mode=user&amp;action=edit_email">{#edit_email#}</a> ]</span><br />
+<td class="d"><!--<a href="mailto:{$user_email}">-->{$user_email}<!--</a>--> &nbsp;<span class="small">[ <a href="index.php?mode=user&amp;action=edit_email">{#edit_email#}</a> ]}</span><br />
 <span class="small"><input id="email_contact" type="checkbox" name="email_contact" value="1"{if $email_contact==1} checked="checked"{/if} /><label for="email_contact">{#edit_user_email_contact#}</label></span></td>
+</tr>
+<tr>
+<td class="c"><label for="user_emailalias"><strong>{#edit_user_emailalias#}</strong></td>
+<td class="d"><input id="user_emailalias" type="text" size="40" name="user_emailalias" value="{$user_emailalias}" maxlength="{$settings.email_maxlength}" /></td>
 </tr>
 <tr>
 <td class="c"><label for="user_hp"><strong>{#edit_user_hp#}</strong></label></td>
@@ -138,6 +142,7 @@
 <tr>
 <td class="c"><strong>{#edit_user_notification#}</strong></td>
 <td class="d"><input id="new_posting_notification" type="checkbox" name="new_posting_notification" value="1"{if $new_posting_notification=="1"} checked="checked"{/if} /><label for="new_posting_notification">{#admin_mod_notif_posting#}</label><br />
+<input id="like_notification" type="checkbox" name="like_notification" value="1"{if $like_notification=="1"} checked="checked"{/if} /><label for="like_notification">{#admin_mod_like_posting#}</label><br />
 {if $mod||$admin}
 <input id="new_user_notification" type="checkbox" name="new_user_notification" value="1"{if $new_user_notification=="1"} checked="checked"{/if} /><label for="new_user_notification">{#admin_mod_notif_register#}</label>
 {/if}

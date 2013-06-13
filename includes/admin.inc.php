@@ -62,7 +62,7 @@ if(isset($_POST['new_category']))
 if(isset($_GET['edit_user']))
  {
   $edit_user_id = intval($_GET['edit_user']);
-  $result = mysql_query("SELECT user_type, user_name, user_real_name, user_email, email_contact, user_hp, user_location, signature, profile, user_view, new_posting_notification, new_user_notification, gender, birthday, activate_code, language, time_zone, time_difference, theme FROM ".$db_settings['userdata_table']." WHERE user_id = '".$edit_user_id."'", $connid) or raise_error('database_error',mysql_error());
+  $result = mysql_query("SELECT user_type, user_name, user_real_name, user_email, email_contact, user_hp, user_location, signature, profile, user_view, new_posting_notification, like_notification, new_user_notification, gender, birthday, activate_code, language, time_zone, time_difference, theme FROM ".$db_settings['userdata_table']." WHERE user_id = '".$edit_user_id."'", $connid) or raise_error('database_error',mysql_error());
   $field = mysql_fetch_array($result);
   mysql_free_result($result);
 
@@ -119,6 +119,7 @@ if(isset($_GET['edit_user']))
   $smarty->assign('signature',htmlspecialchars($field["signature"]));
   $smarty->assign('user_view',$field["user_view"]);
   $smarty->assign('new_posting_notification',$field["new_posting_notification"]);
+  $smarty->assign('like_notification',$field["like_notification"]);
   $smarty->assign('new_user_notification',$field["new_user_notification"]);
   if(trim($field['activate_code'])!='') $smarty->assign('inactive', true);
 
@@ -157,6 +158,7 @@ if(isset($_POST['edit_user_submit']))
   else $user_view = $settings['default_view'];
   $user_time_difference = trim($_POST['user_time_difference']);
   if(isset($_POST['new_posting_notification'])) $new_posting_notification = trim($_POST['new_posting_notification']); else $new_posting_notification = 0;
+  if(isset($_POST['like_notification'])) $like_notification = trim($_POST['like_notification']); else $like_notification = 0;
   if(isset($_POST['new_user_notification'])) $new_user_notification = trim($_POST['new_user_notification']); else $new_user_notification = 0;
 
   // time zone:
@@ -297,7 +299,7 @@ if(isset($_POST['edit_user_submit']))
   // save if no errors:
   if(empty($errors))
    {
-    @mysql_query("UPDATE ".$db_settings['userdata_table']." SET user_name='".mysql_real_escape_string($edit_user_name)."', user_type='".intval($edit_user_type)."', user_email='".mysql_real_escape_string($user_email)."', user_real_name='".mysql_real_escape_string($user_real_name)."', gender=".intval($gender).", birthday='".mysql_real_escape_string($birthday)."', email_contact=".intval($email_contact).", user_hp='".mysql_real_escape_string($user_hp)."', user_location='".mysql_real_escape_string($user_location)."', profile='".mysql_real_escape_string($profile)."', signature='".mysql_real_escape_string($signature)."', last_login=last_login, registered=registered, new_posting_notification=".intval($new_posting_notification).", new_user_notification=".intval($new_user_notification).", language='".mysql_real_escape_string($user_language)."', time_zone='".mysql_real_escape_string($user_time_zone)."', time_difference=".intval($time_difference).", theme='".mysql_real_escape_string($user_theme)."' WHERE user_id=".$edit_user_id, $connid) or raise_error('database_error',mysql_error());
+    @mysql_query("UPDATE ".$db_settings['userdata_table']." SET user_name='".mysql_real_escape_string($edit_user_name)."', user_type='".intval($edit_user_type)."', user_email='".mysql_real_escape_string($user_email)."', user_real_name='".mysql_real_escape_string($user_real_name)."', gender=".intval($gender).", birthday='".mysql_real_escape_string($birthday)."', email_contact=".intval($email_contact).", user_hp='".mysql_real_escape_string($user_hp)."', user_location='".mysql_real_escape_string($user_location)."', profile='".mysql_real_escape_string($profile)."', signature='".mysql_real_escape_string($signature)."', last_login=last_login, registered=registered, new_posting_notification=".intval($new_posting_notification).", like_notification=".intval($like_notification).", new_user_notification=".intval($new_user_notification).", language='".mysql_real_escape_string($user_language)."', time_zone='".mysql_real_escape_string($user_time_zone)."', time_difference=".intval($time_difference).", theme='".mysql_real_escape_string($user_theme)."' WHERE user_id=".$edit_user_id, $connid) or raise_error('database_error',mysql_error());
     #@mysql_query("UPDATE ".$db_settings['forum_table']." SET time=time, last_reply=last_reply, edited=edited, name='".mysql_real_escape_string($edit_user_name)."' WHERE user_id=".intval($edit_user_id), $connid);
     #@mysql_query("UPDATE ".$db_settings['forum_table']." SET time=time, last_reply=last_reply, edited=edited, edited_by='".mysql_real_escape_string($edit_user_name)."' WHERE edited_by='".mysql_real_escape_string($old_user_name)."'", $connid);
     @mysql_query("DELETE FROM ".$db_settings['userdata_cache_table']." WHERE cache_id=".$edit_user_id, $connid);
@@ -364,6 +366,7 @@ if(isset($_POST['edit_user_submit']))
     if(isset($_POST['user_view'])) $smarty->assign('user_view', intval($_POST['user_view']));
     if(isset($_POST['user_time_difference'])) $smarty->assign('user_time_difference', htmlspecialchars($_POST['user_time_difference']));
     if(isset($_POST['new_posting_notification'])) $smarty->assign('new_posting_notification', intval($_POST['new_posting_notification']));
+    if(isset($_POST['like_notification'])) $smarty->assign('like_notification', intval($_POST['like_notification']));
     if(isset($_POST['new_user_notification'])) $smarty->assign('new_user_notification', intval($_POST['new_user_notification']));
     if(isset($_POST['delete_avatar'])) $smarty->assign('delete_avatar', 1);
    }

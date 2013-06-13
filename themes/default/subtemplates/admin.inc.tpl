@@ -563,6 +563,7 @@
 <tr>
 <td class="c"><strong>{#edit_user_notification#}</strong></td>
 <td class="d"><input id="new_posting_notification" type="checkbox" name="new_posting_notification" value="1"{if $new_posting_notification=="1"} checked="checked"{/if} /><label for="new_posting_notification">{#admin_mod_notif_posting#}</label><br />
+<input id="like_notification" type="checkbox" name="like_notification" value="1"{if $like_notification=="1"} checked="checked"{/if} /><label for="like_notification">{#admin_mod_like_posting#}</label><br />
 <input id="new_user_notification" type="checkbox" name="new_user_notification" value="1"{if $new_user_notification=="1"} checked="checked"{/if} /><label for="new_user_notification">{#admin_mod_notif_register#}</label></td>
 </tr>
 {/if}

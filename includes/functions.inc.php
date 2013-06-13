@@ -1404,7 +1404,7 @@ function emailNotification2ParentAuthor($id, $delayed=false)
   global $settings, $db_settings, $lang, $connid;
   $id=intval($id);
   // data of posting:
-  $result = @mysql_query("SELECT pid, tid, name, user_name, ".$db_settings['forum_table'].".user_id, subject, text
+  $result = @mysql_query("SELECT pid, tid, name, user_name, user_email, ".$db_settings['forum_table'].".user_id, subject, text
                           FROM ".$db_settings['forum_table']."
                           LEFT JOIN ".$db_settings['userdata_table']." ON ".$db_settings['userdata_table'].".user_id=".$db_settings['forum_table'].".user_id
                           WHERE id = ".intval($id)." LIMIT 1", $connid);
@@ -1450,7 +1450,7 @@ function emailNotification2ParentAuthor($id, $delayed=false)
       $recipient = $parent_data['email'];
       $subject = str_replace("[original_subject]",  $parent_data['subject'], $lang['email_subject']);
       $subject = str_replace("[subject]",  $data['subject'], $lang['email_subject']);
-      my_threaded_mail($recipient, $subject, $emailbody, "", $id);
+      my_threaded_mail($recipient, $subject, $emailbody, $data['user_email'], $id);
      }
     if($parent_data['pid']!=0)
      {
@@ -1498,15 +1498,15 @@ function emailNotification2ParentAuthor($id, $delayed=false)
  * @param int $id : the id of the posting
  * @param bool $delayed : true adds a delayed message (when postibg was activated manually)
  */
-function emailNotification2ModsAndAdmins($id, $delayed=false)
- {
+function emailNotification2ModsAndAdmins($id, $delayed=false) {  #also handle pinned posts and likes
   global $settings, $db_settings, $lang, $connid;
   $id=intval($id);
   // data of posting:
-  $result = @mysql_query("SELECT pid, name, user_name, user_email, ".$db_settings['forum_table'].".user_id, subject, text
+  $query = "SELECT pid, sticky, name, user_name, user_email, ".$db_settings['forum_table'].".user_id, subject, text
                          FROM ".$db_settings['forum_table']."
                          LEFT JOIN ".$db_settings['userdata_table']." ON ".$db_settings['userdata_table'].".user_id=".$db_settings['forum_table'].".user_id
-                         WHERE id = ".intval($id)." LIMIT 1", $connid);
+                         WHERE id = ".intval($id)." LIMIT 1";
+  $result = @mysql_query($query);
   $data = mysql_fetch_array($result);
   mysql_free_result($result);
   // overwrite $data['name'] with $data['user_name'] if registered user:
@@ -1534,16 +1534,56 @@ function emailNotification2ModsAndAdmins($id, $delayed=false)
   $mysubj = str_replace("[subject]", $subject, $lang['email_subject']);
   // who gets an E-mail notification?
   $recipient_result = @mysql_query("SELECT user_name, user_email FROM ".$db_settings['userdata_table']." WHERE user_type >= 0 AND new_posting_notification=1", $connid) or raise_error('database_error',mysql_error());
+  $sent_list = array();
   while($admin_array = mysql_fetch_array($recipient_result))
    {
     $ind_emailbody = str_replace("[admin]", $admin_array['user_name'], $emailbody);
     #$recipient = encode_mail_name($admin_array['user_name']).' <'.$admin_array['user_email'].'>';
     $recipient = $admin_array['user_email'];
+    $sent_list[] = $recipient;
     my_threaded_mail($recipient, $subject, $emailbody, $fromemail, $id);
     #my_mail($recipient, $lang['admin_email_subject'], $ind_emailbody);
    }
   mysql_free_result($recipient_result);
- }
+
+  # If this message is sticky, send something out to anyone who wants to hear about sticky topics
+  if ($data['sticky'] == 1) {
+    # get the users who want to see updates to pinned posts, and send mail to them too but only if they're not already in
+    # the sent list.
+  }
+
+  # Finally, starting with this post's parent, walk up the post thread and send a message to everyone who liked a parent unless
+  # they're already in the sent list.
+  $parent_id = $data['pid'];
+  while ($parent_id != "") {
+    $query = "SELECT DISTINCT ".$db_settings['userdata_table'].".user_name AS 'user_name', user_email FROM ".$db_settings['userdata_table'].",".$db_settings['like_table'].
+             " WHERE ".$db_settings['like_table'].".user_id = ".$db_settings['userdata_table'].".user_id".
+             " AND ".$db_settings['like_table'].".thread_id = $parent_id"." AND like_notification = 1";
+    $recipient_result = mysql_query($query) or raise_error('database_error', $query);
+
+    $query = "SELECT pid FROM ".$db_settings['forum_table']." WHERE id = ".$parent_id;
+    $result = mysql_query($query) or die($query);
+    if (mysql_num_rows($result) > 0) {
+      $row = mysql_fetch_array($result);
+      $parent_id = $row['pid'];
+    }
+    else {
+      $parent_id = "";
+    }
+
+    if (mysql_num_rows($recipient_result) > 0) {
+      while ($admin_array = mysql_fetch_array($recipient_result)) {
+        $recipient = $admin_array['user_email'];
+        if (in_array($recipient, $sent_list)) {
+          continue;
+        }
+
+        $sent_list[] = $recipient;
+        my_threaded_mail($recipient, $subject, $emailbody, $fromemail, $id);
+      }
+    }
+  }
+}
 
 /**
  * function for the up/down buttons in the admin area in case JavaScript

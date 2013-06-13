@@ -35,7 +35,7 @@ $category = isset($_SESSION[$settings['session_prefix'].'usersettings']['categor
 
 $id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
 $back = isset($_REQUEST['back']) ? $_REQUEST['back'] : 'index';
-if($back!='entry' && $back!='thread' && $back!='index') $back='index';
+if($back!='entry' && $back!='thread' && $back!='index' && $back!='pin') $back='index';
 $posting_mode = isset($_REQUEST['posting_mode']) ? intval($_REQUEST['posting_mode']) : 0; // 0 = post, 1 = edit
 
 if(isset($_GET['edit']) && intval($_GET['edit'])>0) $posting_mode = 1;
@@ -325,6 +325,12 @@ switch($action)
     }
   break;
   case 'posting':
+   if ($back == 'pin') {
+     $query = "UPDATE ".$db_settings['forum_table']." SET sticky = (1 - sticky) WHERE id = ".$id;
+     $result = mysql_query($query) or die($query);
+     header('Location: index.php?id='.$id);
+     exit;
+   }
    if($settings['forum_readonly']==1)
     {
      $subnav_link = array('mode'=>'index', 'name'=>'forum_index_link', 'title'=>'forum_index_link_title');
