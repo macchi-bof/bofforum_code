@@ -1487,6 +1487,7 @@ var ready = new (function () {
 		 * Sendet das Formular im Submenue ab, wenn sich der
 		 * Wert im Drop-Down-Menue aendert
 		 */
+		 /*
 		var setAutoSubmitSubNaviForms = function() {
 			var subNav = document.getElementById("subnav-2");
 			if (subNav) {
@@ -1500,6 +1501,7 @@ var ready = new (function () {
 				}
 			}
 		};
+		*/
 
 		this.computeLikes = function(e, val) {
 			var num = parseInt(e.innerHTML);
@@ -1577,7 +1579,7 @@ var ready = new (function () {
 			
 			initPostingFolding( document.getElementsByClassName("thread-posting") );
 			initPopUpLinks();
-			setAutoSubmitSubNaviForms();
+			// setAutoSubmitSubNaviForms();
 			sidebar = new Sidebar(templatePath);
 			
 			if (typeof preload == "object") 

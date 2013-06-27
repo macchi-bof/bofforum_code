@@ -119,7 +119,7 @@
 {if ($admin ||$mod) && $settings.tags}
 <p>
 <label for="tags" class="input">{#tags_marking#}</label>
-<input id="tags" type="text" size="50" name="tags" value="{$tags|default:""}" maxlength="253" />&nbsp;<span class="xsmall">{#tags_note#}</span>
+<input id="tags" type="text" size="50" name="tags" value="{$tags|default:""}" maxlength="253" />&nbsp;<span>{#tags_note#}</span>
 </p>
 {/if}
 </fieldset>

@@ -84,7 +84,7 @@ if($result_count > 0)
  {
   while($zeile = mysql_fetch_array($result))
    {
-    $thread_result = @mysql_query("SELECT id, pid, tid, ".$db_settings['forum_table'].".user_id, user_type, UNIX_TIMESTAMP(time) AS time, UNIX_TIMESTAMP(time + INTERVAL ".intval($time_difference)." MINUTE) AS timestamp, UNIX_TIMESTAMP(last_reply) AS last_reply, name, user_name, subject, IF(text='',true,false) AS no_text, category, views, marked, locked, sticky, spam
+    $thread_result = @mysql_query("SELECT id, pid, tid, ".$db_settings['forum_table'].".user_id, user_type, UNIX_TIMESTAMP(time) AS time, UNIX_TIMESTAMP(time + INTERVAL ".intval($time_difference)." MINUTE) AS timestamp, UNIX_TIMESTAMP(last_reply) AS last_reply, name, user_name, user_real_name, subject, IF(text='',true,false) AS no_text, category, views, marked, locked, sticky, spam
                                    FROM ".$db_settings['forum_table']."
                                    LEFT JOIN ".$db_settings['userdata_table']." ON ".$db_settings['userdata_table'].".user_id=".$db_settings['forum_table'].".user_id
                                    WHERE tid = ".$zeile['tid'].$display_spam_query_and."
@@ -106,6 +106,9 @@ if($result_count > 0)
        {
         if(!$data['user_name']) $data['name'] = $lang['unknown_user'];
         else $data['name'] = htmlspecialchars($data['user_name']);
+        if ($data['user_real_name']) {
+          $data['name'] .= " (".$data['user_real_name'].")";
+        }
        }
       else $data['name'] = htmlspecialchars($data['name']);
 
@@ -113,7 +116,7 @@ if($result_count > 0)
       if(isset($categories[$data['category']]) && $categories[$data['category']]!='') $data['category_name']=$categories[$data['category']];
 
       // convert formated time to a utf-8:
-      $data['formated_time'] = format_time($lang['time_format'],$data['timestamp']);
+      $data['formated_time'] = format_time($lang['time_format_mod'],$data['timestamp']);
 
       if($data['pid']==0)
        {

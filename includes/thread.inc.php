@@ -65,7 +65,7 @@ else $order = 'time';
                            UNIX_TIMESTAMP(time) AS time, UNIX_TIMESTAMP(edited + INTERVAL ".intval($time_difference)." MINUTE) AS e_time,
                            UNIX_TIMESTAMP(edited - INTERVAL ".$settings['edit_delay']." MINUTE) AS edited_diff, edited_by, name, email,
                            subject, hp, location, ip, text, cache_text, tags, show_signature, views, spam, spam_check_status, category, locked, ip,
-                           user_name, user_type, user_email, email_contact, user_hp, user_location, signature, cache_signature, edit_key
+                           user_name, user_real_name, user_type, user_email, email_contact, user_hp, user_location, signature, cache_signature, edit_key
                            FROM ".$db_settings['forum_table']."
                            LEFT JOIN ".$db_settings['entry_cache_table']." ON ".$db_settings['entry_cache_table'].".cache_id=id
                            LEFT JOIN ".$db_settings['userdata_table']." ON ".$db_settings['userdata_table'].".user_id=".$db_settings['forum_table'].".user_id
@@ -115,6 +115,7 @@ else $order = 'time';
        {
         if(!$data['user_name']) $data['name'] = $lang['unknown_user'];
         else $data['name'] = htmlspecialchars($data['user_name']);
+        if ($data['user_real_name']) $data['name'] .= " (".$data['user_real_name'].")";
        }
       else $data['name'] = htmlspecialchars($data['name']);
 

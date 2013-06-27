@@ -677,7 +677,8 @@ function do_bbcode_size($action, $attributes, $content, $params, $node_object)
     if(isset($size[$attributes['default']])) return true;
     else return false;
    }
-  return '<span style="font-size:'.$size[$attributes['default']].';">'.$content.'</span>';
+  // return '<span style="font-size:'.$size[$attributes['default']].';">'.$content.'</span>';
+  return '<span class="content_copy_'.$size[$attributes['default']].'">'.$content.'</span>';
  }
 
 // processes BBCode links for e-mail notifications (plain text)
@@ -1233,11 +1234,11 @@ function smilies($string)
   while($data = mysql_fetch_array($result))
    {
     if($data['title']!='') $title = ' title="'.$data['title'].'"'; else $title='';
-    if($data['code_1']!='') $string = str_replace($data['code_1'], "<img src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_1']."\"".$title." />", $string);
-    if($data['code_2']!='') $string = str_replace($data['code_2'], "<img src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_2']."\"".$title." />", $string);
-    if($data['code_3']!='') $string = str_replace($data['code_3'], "<img src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_3']."\"".$title." />", $string);
-    if($data['code_4']!='') $string = str_replace($data['code_4'], "<img src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_4']."\"".$title." />", $string);
-    if($data['code_5']!='') $string = str_replace($data['code_5'], "<img src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_5']."\"".$title." />", $string);
+    if($data['code_1']!='') $string = str_replace($data['code_1'], "<img class=\"emoji\" src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_1']."\"".$title." />", $string);
+    if($data['code_2']!='') $string = str_replace($data['code_2'], "<img class=\"emoji\" src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_2']."\"".$title." />", $string);
+    if($data['code_3']!='') $string = str_replace($data['code_3'], "<img class=\"emoji\" src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_3']."\"".$title." />", $string);
+    if($data['code_4']!='') $string = str_replace($data['code_4'], "<img class=\"emoji\" src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_4']."\"".$title." />", $string);
+    if($data['code_5']!='') $string = str_replace($data['code_5'], "<img class=\"emoji\" src=\"images/smilies/".$data['file']."\" alt=\"".$data['code_5']."\"".$title." />", $string);
    }
   mysql_free_result($result);
   return($string);
@@ -1404,7 +1405,7 @@ function emailNotification2ParentAuthor($id, $delayed=false)
   global $settings, $db_settings, $lang, $connid;
   $id=intval($id);
   // data of posting:
-  $result = @mysql_query("SELECT pid, tid, name, user_name, user_email, ".$db_settings['forum_table'].".user_id, subject, text
+  $result = @mysql_query("SELECT pid, tid, name, user_name, user_real_name, user_email, ".$db_settings['forum_table'].".user_id, subject, text
                           FROM ".$db_settings['forum_table']."
                           LEFT JOIN ".$db_settings['userdata_table']." ON ".$db_settings['userdata_table'].".user_id=".$db_settings['forum_table'].".user_id
                           WHERE id = ".intval($id)." LIMIT 1", $connid);
@@ -1415,6 +1416,7 @@ function emailNotification2ParentAuthor($id, $delayed=false)
    {
     if(!$data['user_name']) $data['name'] = $lang['unknown_user'];
     else $data['name'] = $data['user_name'];
+    if ($data['user_real_name']) $data['name'] .= " (".$data['user_real_name'].")";
    }
   // if it's a reply (pid!=0) check if notification was desired by parent posting author:
   if($data['pid']!=0)

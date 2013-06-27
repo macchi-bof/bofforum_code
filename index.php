@@ -141,6 +141,9 @@ switch($mode)
   case 'posting':
      include('includes/posting.inc.php');
      break;
+  case 'poll':
+     include('includes/poll.inc.php');
+     break;
   case 'register':
      include('includes/register.inc.php');
      break;
